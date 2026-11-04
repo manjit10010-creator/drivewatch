@@ -23,3 +23,6 @@ Generic project name, no personal contact details. Add a contact address yoursel
 - The zip files are served from a different host (check the URLs in `data/manifest.json`), so this robots.txt applies only to the page the scraper reads.
 
 **Data credit:** Backblaze Drive Stats, https://www.backblaze.com/cloud-storage/resources/hard-drive-test-data
+
+## Spark threads (2026-11-04)
+CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) gives local[22], but with about 6 GB for Spark that leaves about 270 MB per task and risks out-of-memory errors. Decision: start with local[8] (about 750 MB per task); try local[12] if memory allows. WSL2 is capped at 8 GB RAM, 4 GB swap and 12 processors in .wslconfig.
