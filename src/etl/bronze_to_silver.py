@@ -80,6 +80,7 @@ def main():
         .config("spark.driver.memory", "5g")
         .config("spark.sql.shuffle.partitions", "16")
         .config("spark.sql.sources.partitionOverwriteMode", "dynamic")
+        .config("spark.sql.parquet.compression.codec", "zstd")
         .getOrCreate()
     )
     spark.sparkContext.setLogLevel("WARN")
