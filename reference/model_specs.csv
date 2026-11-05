@@ -1,0 +1,23 @@
+model,interface,rpm,release_year,source_url,status
+WDC WUH722222ALE6L4,SATA,7200,,https://serverorbit.com/western-digital-ultrastar-dc-hc570-22tb-7-2k-rpm-sata-6gbps-hard-drive-wuh722222ale6l4/,checked
+TOSHIBA MG08ACA16TA,SATA,7200,,https://toshiba.semicon-storage.com/content/dam/toshiba-ss-v3/master/en/storage/product-archive/eHDD_MG08_Product-Overview_EOL.pdf,checked
+TOSHIBA MG07ACA14TA,SATA,7200,,https://toshiba-semicon-storage.com/content/dam/toshiba-ss-v2/master/en/storage/product/data-center-enterprise/eHDD-MG07ACA-Product-Manual_r2.pdf,checked
+ST16000NM001G,SATA,7200,,https://www.disctech.com/Seagate-Exos-X16-ST16000NM001G-16TB-512e-SATA-Hard-Drive,checked
+WDC WUH721816ALE6L4,SATA,7200,,https://www.shi.com/product/40307005/WD-Ultrastar-DC-HC550-WUH721816ALE6L4,checked
+TOSHIBA MG10ACA20TE,SATA,7200,,https://www.disctech.com/Toshiba-MG10ACA20TE-20TB-3.5-LFF-6Gbps-7.2K-RPM-512e-MG10-Series-SATA-Hard-Drive,checked
+ST12000NM0008,SATA,7200,,https://www.shi.com/product/36835767/Seagate-Exos-X14-ST12000NM0008,checked
+HGST HUH721212ALE604,SATA,7200,,https://www.ox.ee/en/product/2312605,checked
+ST8000NM0055,SATA,7200,,https://www.shi.com/product/30982983/Seagate-Exos-7E8-ST8000NM0055,checked
+ST12000NM001G,SATA,7200,,https://www.shi.com/product/39537675/Seagate-Exos-X16-ST12000NM001G,checked
+ST14000NM001G,SATA,7200,,https://www.shi.com/Product/37548347,checked
+HGST HUH721212ALN604,SATA,7200,,https://fleetnetwork.ca/hgst-ultrastar-he12-huh721212aln604-12-tb-hard-drive-3-5-internal-sata-sata-600-7200rpm-0f30143/,checked
+ST24000NM002H,SATA,7200,,https://www.shi.com/product/47212367/Seagate-Exos-X24-ST24000NM002H,checked
+TOSHIBA MG11ACA24TE,SATA,7200,,https://www.cdw.com/product/toshiba-mg11-series-mg11aca24te-hard-drive-enterprise-24-tb-sata-6g/8317551,checked
+ST8000DM002,SATA,7200,,https://www.newegg.com/p/2RC-02PD-003T7,checked
+WDC WUH721414ALE6L4,SATA,7200,,https://serverpartdeals.com/WD14TB,checked
+WDC WUH722626ALE6L4,SATA,7200,,https://bechtle.com/gb/shop/western-digital-dc-hc590-26tb-sata-hdd--4860064--p,checked
+TOSHIBA MG08ACA16TE,SATA,7200,,https://manual-pdf.com/brands/toshiba/mg08scp16te,checked
+TOSHIBA MG08ACA16TEY,SATA,7200,,https://manual-pdf.com/brands/toshiba/mg08scp16te,checked
+WDC WUH721816ALE6L0,SATA,7200,,https://www.convergetp.co.uk/dc-hc550-16tb-512mb-sata-ultra-ise-np3-1tstosto-027993,checked
+HGST HUH721212ALE600,SATA,7200,,https://cdw.com/product/hgst-ultrastar-he12-huh721212ale600-hard-drive-12-tb-sata-6gb-s/4791971,checked
+WUH721816ALE6L4,SATA,7200,,https://www.shi.com/product/40307005/WD-Ultrastar-DC-HC550-WUH721816ALE6L4,checked
