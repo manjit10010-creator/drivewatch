@@ -42,3 +42,10 @@ CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) giv
 - Our failure rows vs Backblaze: 2025 Q1 1,067 vs 1,093 (-2.4%), Q3 1,254 vs 1,273 (-1.5%), full year 4,327 vs 4,317 (+0.2%), 2026 Q1 1,030 vs 1,030, Q2 1,522 vs 1,498 (+1.6%). Gate passed (within about 2.5%).
 - Differences are unexplained. Backblaze reports apply filters we do not, and quarter assignment may differ.
 - `fact_failures` keeps each drive's first failure only, so quarter counts from it undercount the 18 repeat failures. Compare against failure rows in `fact_daily_smart` instead.
+
+## Reappearing drives excluded from labels (2026-11-06)
+
+- **Decision:** drives that report again after their first failure date (37 drives, 0.54% of failed drives) are excluded entirely from the labelled dataset used for training and evaluation.
+- **Why:** many of these "failures" look like drives pulled and returned to service (Backblaze notes firmware-update pulls for Toshiba MG08ACA16TEY). A positive label on a drive that was never unhealthy is noise.
+- **How:** the rule is computed from the data when labels are built (any drive with rows after its first failure date), not a hard-coded list, and the excluded drives are written to a table with the reason.
+- **Trade-off:** it uses hindsight, which is fine when cleaning a training set but impossible when scoring live. It is stated as a limit in the model card.
