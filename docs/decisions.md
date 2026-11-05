@@ -26,3 +26,19 @@ Generic project name, no personal contact details. Add a contact address yoursel
 
 ## Spark threads (2026-11-04)
 CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) gives local[22], but with about 6 GB for Spark that leaves about 270 MB per task and risks out-of-memory errors. Decision: start with local[8] (about 750 MB per task); try local[12] if memory allows. WSL2 is capped at 8 GB RAM, 4 GB swap and 12 processors in .wslconfig.
+
+## Phase 2 decisions (2026-11-05)
+
+- **zstd compression for silver Parquet.** Set `spark.sql.parquet.compression.codec` to `zstd`. One month of silver dropped from 610 MB to 477 MB.
+- **`reference/` folder for hand-maintained data.** `reference/model_specs.csv` lives at the repo root, not under `data/`, because `data/` is git-ignored and the specs should be versioned.
+- **Drive specs came from web searches, not a scraper.** Retailer pages and Toshiba datasheets were used. `scrape_specs.py` was written but never run; it is kept for the scraping learning goal.
+- **`release_year` is left blank on purpose.** Sources gave conflicting kinds of dates (announcement, launch, retail), so none is trusted yet.
+- **`rpm` and `interface` carry almost no signal.** All 21 filled models are SATA 7200 rpm, so these are constant across about 96% of the fleet.
+- **Q2 2026 failure count is +24 (1.6%) above Backblaze's report** (1,522 vs 1,498). Cause unexplained. SSD/boot models had zero failures, so boot drives are not the reason. Gate still passes at 1.6%.
+- **Dev sample:** TOSHIBA MG07ACA14TA, ST12000NM0008, TOSHIBA MG08ACA16TA. About 96k drives (26% of the fleet) and about 750 failures in H1 2026.
+- **Adding 2025 Q3 and Q4** so rolling features and a time-based split with a 30-day gap have enough history.
+## Failure counts vs Backblaze reports (2026-11-05)
+
+- Our failure rows vs Backblaze: 2025 Q1 1,067 vs 1,093 (-2.4%), Q3 1,254 vs 1,273 (-1.5%), full year 4,327 vs 4,317 (+0.2%), 2026 Q1 1,030 vs 1,030, Q2 1,522 vs 1,498 (+1.6%). Gate passed (within about 2.5%).
+- Differences are unexplained. Backblaze reports apply filters we do not, and quarter assignment may differ.
+- `fact_failures` keeps each drive's first failure only, so quarter counts from it undercount the 18 repeat failures. Compare against failure rows in `fact_daily_smart` instead.
