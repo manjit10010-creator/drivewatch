@@ -54,3 +54,9 @@ CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) giv
 - Label = 1 if the drive's first failure date is 0 to H days after the scoring date (failure-day row counts as positive). Rows after the first failure and rows whose H-day window is not fully observed are dropped. The 37 drives that reappear after failing are excluded and listed in `excluded_drives`.
 - The EDA notebook's 0.1164% positive rate (30 days, H1 2026) was inconsistent: its numerator counted rows from the last 30 days, which its denominator excluded. Reproducing it without the cutoff gives 60,406 positives against the notebook's 60,436 (difference probably repeat failures). With the cutoff applied the figure is 0.1127% (failure-day row counted) or 0.1084% (excluded).
 - Dev sample, H=30: 49,519,299 rows, 97,260 drives, 54,853 positives (0.1108%).
+
+## Phase 3 baselines (dev sample, H = 30)
+- Split: train 2025-02-01..2025-11-30, validation 2026-01-01..2026-03-31, test 2026-05-01..2026-05-31 (untouched); 30-day gaps between periods.
+- Validation (8,556,532 rows, 9,668 positives, 0.113%): rule "any reallocated sectors" PR-AUC 0.0075; graded error-count rule 0.0256; logistic regression (class weights, 3% of healthy rows) 0.1558, recall 0.574 at 1% false alarms, precision 0.515 at top 20 per week.
+- Grouped check (20% of drives held out): logistic regression PR-AUC 0.150.
+- To test in Phase 4: drop days_in_data and days_since_first_nonzero_* (left-censored by the 2025-01-01 data start).
