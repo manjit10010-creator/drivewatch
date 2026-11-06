@@ -49,3 +49,8 @@ CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) giv
 - **Why:** many of these "failures" look like drives pulled and returned to service (Backblaze notes firmware-update pulls for Toshiba MG08ACA16TEY). A positive label on a drive that was never unhealthy is noise.
 - **How:** the rule is computed from the data when labels are built (any drive with rows after its first failure date), not a hard-coded list, and the excluded drives are written to a table with the reason.
 - **Trade-off:** it uses hindsight, which is fine when cleaning a training set but impossible when scoring live. It is stated as a limit in the model card.
+
+## Label definition and EDA class-balance correction
+- Label = 1 if the drive's first failure date is 0 to H days after the scoring date (failure-day row counts as positive). Rows after the first failure and rows whose H-day window is not fully observed are dropped. The 37 drives that reappear after failing are excluded and listed in `excluded_drives`.
+- The EDA notebook's 0.1164% positive rate (30 days, H1 2026) was inconsistent: its numerator counted rows from the last 30 days, which its denominator excluded. Reproducing it without the cutoff gives 60,406 positives against the notebook's 60,436 (difference probably repeat failures). With the cutoff applied the figure is 0.1127% (failure-day row counted) or 0.1084% (excluded).
+- Dev sample, H=30: 49,519,299 rows, 97,260 drives, 54,853 positives (0.1108%).
