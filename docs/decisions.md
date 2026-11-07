@@ -141,3 +141,17 @@ The weekly precision at top K (0.54 at K = 20) is about twice the distinct-drive
 **Correction to earlier Phase 4 entries: seed noise.** The entries above assumed run-to-run noise of about 0.005 PR-AUC. The 5-seed range is 0.013 (0.1816 to 0.1949). Differences below about 0.01 in the single-seed comparisons are therefore ties: the feature-set sizes (49, 29, 25, 15), regularization, 10% sampling, class weight 5, and the removal of the lifetime counters (0.005 to 0.008). The conclusions that still hold: every seed beats the logistic regression; the per-model models were below the global model's lowest seed at all three tree counts; adding a model column made no difference. The choices of no class weighting, 3% sampling and the 25-feature set stand because they are simpler, not because they were shown to be better.
 
 **Limits.** Development sample only (3 drive models, about 26% of the fleet); widening to all models is still to do before final results. Business-view simplifications: one decision per 7 days, early picks count as caught if the drive fails within 30 days, failures between decision days with no earlier warning cannot be caught. The test period has not been used.
+
+## Phase 5a: scoring-mode features (no labels)
+
+**Problem.** `features_daily` only holds rows whose 30-day label is known, so its last scoring date is 2026-05-31. The API and the daily pipeline need features for recent days (June 2026 onwards) that have no label yet.
+
+**Decision.** A separate script, `src/features/build_scoring_features.py`, builds only the 25 model features (`reports/selected_features_25.txt`) for any date range, with no label join. It writes `features_scoring` (June 2026: 2,846,832 rows, 95,235 drives, 30 days). `build_features.py` was left untouched, so the training data cannot change by accident. The cost is that the feature formulas live in two files.
+
+**Left-censored features are refused.** `days_in_data` and `days_since_first_nonzero_*` need the full history and were already dropped from the model; the script stops with an error if one is requested.
+
+**Train/serve consistency check.** For days that exist in both tables, the script compares every feature column against `features_daily`. April 2026 (2,856,149 drive-days, 25 features): with a 45-day history lookback there were 201 mismatching values, all in `err_days30_*`. The cause was drives absent for a while: the `LAG` comparison for their first row back used a previous row outside the loaded history. With a 120-day lookback the result is 0 mismatches. The default lookback is now 120 days.
+
+**Known limit.** A drive absent for more than 120 days before the scoring day could still differ from the training build on its first row back. This was not observed in April and is accepted.
+
+**Scope.** Dev sample (3 drive models) only. Widening to all models needs normalized model names (`--all-models`).
