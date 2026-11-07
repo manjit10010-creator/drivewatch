@@ -120,3 +120,24 @@ PR-AUC within each drive model at 200 trees (global / global + model column / pe
 **Decision.** Use a single global model without a model column (200 trees, 3% healthy-row sampling). The per-model models were lower overall at every tree count (by 0.010 to 0.018), probably because each has only 9,400 to 12,400 training positives instead of 32,100 (hypothesis, not tested). Adding the model as a feature made no difference within noise. Within each drive model, the global model ranks failures as well as the dedicated model, which argues against the lifetime counters (`smart_9_raw`, `smart_12_raw`, `smart_193_raw`) acting only as drive-model markers.
 
 **Limits.** Single seed (noise about 0.005 PR-AUC). Predictability differs a lot by drive model: PR-AUC about 0.29 for ST12000NM0008 against about 0.09 for MG08ACA16TA. Only the three development-sample models were compared; widening to all models is still to do. Results may not transfer to other fleets or drive models without retraining.
+
+
+## Phase 4: final configuration, seed check and business view (2026-11-07, validation only; test period untouched)
+
+**Final configuration.** Global LightGBM, 25 features (`reports/selected_features_25.txt`), 200 trees, 15 leaves, min child 500, all positives plus 3% of healthy rows, no class weighting, no model column. Trained with 5 seeds (`src/models/final_model.py`, `reports/final_validation.json`). The model registered for serving is seed 1, chosen in advance (not by validation score); an ensemble of seeds is an option for later.
+
+**Validation, exact (mean, range over 5 seeds).** PR-AUC 0.188 (0.182 to 0.195); ROC-AUC 0.861; recall at 1% false-alarm rate 0.608 (0.606 to 0.611); recall at 0.1% 0.32; weekly precision in the top 20 / 50 / 100: 0.54 / 0.44 / 0.37. Baselines: logistic regression PR-AUC 0.156; rules 0.0075 and 0.0256.
+
+**Business view.** Every 7 days the K riskiest drives not yet replaced are replaced; a failing drive counts as caught if picked on a day when it fails within 30 days; 13 weekly decisions; 488 distinct drives fail within the validation labels.
+
+| K per week | model caught (range over seeds) | recall | precision | rule: smart_5 + smart_197 | random (mean of 20) |
+|---|---|---|---|---|---|
+| 20 | 75.2 (71 to 78) | 15.4% | 28.9% | 29 (5.9%) | 0.2 |
+| 50 | 109.0 (106 to 112) | 22.3% | 16.8% | 49 (10.0%) | 0.9 |
+| 100 | 126.4 (122 to 132) | 25.9% | 9.7% | 77 (15.8%) | 2.1 |
+
+The weekly precision at top K (0.54 at K = 20) is about twice the distinct-drive precision (28.9%) because it re-counts the same failing drive in consecutive weeks. Report the business-view figures to the operations persona.
+
+**Correction to earlier Phase 4 entries: seed noise.** The entries above assumed run-to-run noise of about 0.005 PR-AUC. The 5-seed range is 0.013 (0.1816 to 0.1949). Differences below about 0.01 in the single-seed comparisons are therefore ties: the feature-set sizes (49, 29, 25, 15), regularization, 10% sampling, class weight 5, and the removal of the lifetime counters (0.005 to 0.008). The conclusions that still hold: every seed beats the logistic regression; the per-model models were below the global model's lowest seed at all three tree counts; adding a model column made no difference. The choices of no class weighting, 3% sampling and the 25-feature set stand because they are simpler, not because they were shown to be better.
+
+**Limits.** Development sample only (3 drive models, about 26% of the fleet); widening to all models is still to do before final results. Business-view simplifications: one decision per 7 days, early picks count as caught if the drive fails within 30 days, failures between decision days with no earlier warning cannot be caught. The test period has not been used.
