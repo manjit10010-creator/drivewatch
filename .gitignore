@@ -7,3 +7,5 @@ mlruns/
 *.duckdb
 .env
 .pytest_cache/
+nmlruns/
+nmlflow.db

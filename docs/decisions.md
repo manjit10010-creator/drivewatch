@@ -60,3 +60,46 @@ CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) giv
 - Validation (8,556,532 rows, 9,668 positives, 0.113%): rule "any reallocated sectors" PR-AUC 0.0075; graded error-count rule 0.0256; logistic regression (class weights, 3% of healthy rows) 0.1558, recall 0.574 at 1% false alarms, precision 0.515 at top 20 per week.
 - Grouped check (20% of drives held out): logistic regression PR-AUC 0.150.
 - To test in Phase 4: drop days_in_data and days_since_first_nonzero_* (left-censored by the 2025-01-01 data start).
+
+## Phase 4: LightGBM and feature selection (2026-11-07, validation only; test period untouched)
+
+**Setup.** LightGBM trained on all positive rows plus 3% of healthy rows (train 2025-02-01..2025-11-30). Metrics are exact on the full validation period (8,556,532 rows, 9,668 positives, 0.113%). Every run is logged in MLflow (experiment `drivewatch-phase4`) and saved in `reports/lgbm_*.json`. All numbers are single-seed; run-to-run noise is about 0.005 PR-AUC, so smaller differences are treated as ties.
+
+**Result.** Best validation PR-AUC is about 0.19 (logistic regression 0.1558; rule baselines 0.0075 and 0.0256). ROC-AUC is not better than the logistic regression (about 0.86 for both). Recall at 1% false-alarm rate is about 0.60 (logistic regression 0.574).
+
+**Decisions.**
+1. Dropped the left-censored features `days_in_data` and `days_since_first_nonzero_*`: PR-AUC 0.1904 without against 0.1891 with them (no cost), and the model now relies on `smart_197_raw` and `err_days30_smart_197` instead of a feature whose meaning shifts over calendar time.
+2. No class weighting: `scale_pos_weight` 5 gave 0.1812 against 0.1891. Undersampling healthy rows to 3% is kept; 10% gave 0.1785 at 100 trees for about 3x the data.
+3. Use 100 to 200 trees: validation PR-AUC fell with more trees in every run. Regularization (15 leaves, min child 500) changed the best score by about 0.003, which is within noise.
+4. Feature selection (`src/models/select_features.py`, `reports/feature_selection.json`): 8 constant `miss_smart_*` flags dropped; 12 highly correlated duplicates dropped (|rho| >= 0.95, simpler feature kept); 29 features left; ranked by permutation importance. Five features did not hurt when permuted: `delta7_smart_198`, `delta7_smart_199`, `temp_std_7`, `smart_199_raw`, `smart_198_raw`.
+5. Selected set: the top 25 by permutation importance (`reports/selected_features_25.txt`). Exact validation PR-AUC at 200 trees: all 49 features 0.1925, 29 features 0.1873, top 25 0.1914, top 15 0.1869. These are within noise of each other, so this is a judgment, not a pass of the 1% rule: the top 25 keeps temperature and the raw reallocated-sector count, which the top 15 loses.
+
+**Checks.** Grouped by drive (20% of drives held out, train period): PR-AUC 0.174 to 0.178 against 0.150 for the logistic regression, so the model generalises to unseen drives. SHAP: reallocated sectors (5), pending sectors (197), uncorrectable errors (187) and temperature raise risk, as expected.
+
+**Open items and known limits.**
+- `smart_9_raw` (power-on hours), `smart_12_raw` (power cycles) and `smart_193_raw` (load cycles) are important in SHAP, but their effect is not a clear physical failure signal. They may identify drive cohorts or models. Removing them lowered PR-AUC by about 0.005 to 0.008. To be tested with per-model-family models.
+- The SHAP direction of `delta30_smart_197` (negative) and `n_obs_30` (negative) is unexplained; rank correlation is only a rough summary of non-monotone effects.
+- The weighted PR-AUC printed by `select_features.py` is about 0.02 lower than the exact value (0.171 against 0.1914 for the same 25 features). Use it only to compare feature sets, never as a reported result.
+- Feature selection used the validation period, so the validation score of the chosen set is slightly optimistic; the test period is the unbiased figure.
+
+
+## Phase 4: LightGBM and feature selection (2026-11-07, validation only; test period untouched)
+
+**Setup.** LightGBM trained on all positive rows plus 3% of healthy rows (train 2025-02-01..2025-11-30). Metrics are exact on the full validation period (8,556,532 rows, 9,668 positives, 0.113%). Every run is logged in MLflow (experiment `drivewatch-phase4`) and saved in `reports/lgbm_*.json`. All numbers are single-seed; run-to-run noise is about 0.005 PR-AUC, so smaller differences are treated as ties.
+
+**Result.** Best validation PR-AUC is about 0.19 (logistic regression 0.1558; rule baselines 0.0075 and 0.0256). ROC-AUC is not better than the logistic regression (about 0.86 for both). Recall at 1% false-alarm rate is about 0.60 (logistic regression 0.574).
+
+**Decisions.**
+1. Dropped the left-censored features `days_in_data` and `days_since_first_nonzero_*`: PR-AUC 0.1904 without against 0.1891 with them (no cost), and the model now relies on `smart_197_raw` and `err_days30_smart_197` instead of a feature whose meaning shifts over calendar time.
+2. No class weighting: `scale_pos_weight` 5 gave 0.1812 against 0.1891. Undersampling healthy rows to 3% is kept; 10% gave 0.1785 at 100 trees for about 3x the data.
+3. Use 100 to 200 trees: validation PR-AUC fell with more trees in every run. Regularization (15 leaves, min child 500) changed the best score by about 0.003, which is within noise.
+4. Feature selection (`src/models/select_features.py`, `reports/feature_selection.json`): 8 constant `miss_smart_*` flags dropped; 12 highly correlated duplicates dropped (|rho| >= 0.95, simpler feature kept); 29 features left; ranked by permutation importance. Five features did not hurt when permuted: `delta7_smart_198`, `delta7_smart_199`, `temp_std_7`, `smart_199_raw`, `smart_198_raw`.
+5. Selected set: the top 25 by permutation importance (`reports/selected_features_25.txt`). Exact validation PR-AUC at 200 trees: all 49 features 0.1925, 29 features 0.1873, top 25 0.1914, top 15 0.1869. These are within noise of each other, so this is a judgment, not a pass of the 1% rule: the top 25 keeps temperature and the raw reallocated-sector count, which the top 15 loses.
+
+**Checks.** Grouped by drive (20% of drives held out, train period): PR-AUC 0.174 to 0.178 against 0.150 for the logistic regression, so the model generalises to unseen drives. SHAP: reallocated sectors (5), pending sectors (197), uncorrectable errors (187) and temperature raise risk, as expected.
+
+**Open items and known limits.**
+- `smart_9_raw` (power-on hours), `smart_12_raw` (power cycles) and `smart_193_raw` (load cycles) are important in SHAP, but their effect is not a clear physical failure signal. They may identify drive cohorts or models. Removing them lowered PR-AUC by about 0.005 to 0.008. To be tested with per-model-family models.
+- The SHAP direction of `delta30_smart_197` (negative) and `n_obs_30` (negative) is unexplained; rank correlation is only a rough summary of non-monotone effects.
+- The weighted PR-AUC printed by `select_features.py` is about 0.02 lower than the exact value (0.171 against 0.1914 for the same 25 features). Use it only to compare feature sets, never as a reported result.
+- Feature selection used the validation period, so the validation score of the chosen set is slightly optimistic; the test period is the unbiased figure.
