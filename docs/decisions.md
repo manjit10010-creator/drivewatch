@@ -103,3 +103,20 @@ CPU is an i9-13900HX (24 cores, 32 logical). The plan's rule (cores minus 2) giv
 - The SHAP direction of `delta30_smart_197` (negative) and `n_obs_30` (negative) is unexplained; rank correlation is only a rough summary of non-monotone effects.
 - The weighted PR-AUC printed by `select_features.py` is about 0.02 lower than the exact value (0.171 against 0.1914 for the same 25 features). Use it only to compare feature sets, never as a reported result.
 - Feature selection used the validation period, so the validation score of the chosen set is slightly optimistic; the test period is the unbiased figure.
+
+
+## Phase 4: global model against per-model-family models (2026-11-07, validation only; test period untouched)
+
+Same top-25 features, LightGBM settings (15 leaves, min child 500) and 3% healthy-row sampling for all variants; exact validation metrics; single seed (`src/models/compare_models.py`, `reports/compare_models.json`).
+
+| variant (200 trees) | PR-AUC | recall@1%FPR | P@50 |
+|---|---|---|---|
+| global, no model column | 0.1914 | 0.606 | 0.438 |
+| global + `model` as a feature | 0.1859 | 0.606 | 0.443 |
+| one model per drive model (scores pooled) | 0.1761 | 0.592 | 0.438 |
+
+PR-AUC within each drive model at 200 trees (global / global + model column / per-model): ST12000NM0008 0.294 / 0.289 / 0.291; TOSHIBA MG07ACA14TA 0.181 / 0.183 / 0.179; TOSHIBA MG08ACA16TA 0.093 / 0.090 / 0.086.
+
+**Decision.** Use a single global model without a model column (200 trees, 3% healthy-row sampling). The per-model models were lower overall at every tree count (by 0.010 to 0.018), probably because each has only 9,400 to 12,400 training positives instead of 32,100 (hypothesis, not tested). Adding the model as a feature made no difference within noise. Within each drive model, the global model ranks failures as well as the dedicated model, which argues against the lifetime counters (`smart_9_raw`, `smart_12_raw`, `smart_193_raw`) acting only as drive-model markers.
+
+**Limits.** Single seed (noise about 0.005 PR-AUC). Predictability differs a lot by drive model: PR-AUC about 0.29 for ST12000NM0008 against about 0.09 for MG08ACA16TA. Only the three development-sample models were compared; widening to all models is still to do. Results may not transfer to other fleets or drive models without retraining.

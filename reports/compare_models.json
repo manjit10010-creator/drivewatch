@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "features_file": "reports/selected_features_25.txt",
+    "n_features": 25,
+    "params": {
+      "objective": "binary",
+      "learning_rate": 0.05,
+      "num_leaves": 15,
+      "min_child_samples": 500,
+      "feature_fraction": 0.8,
+      "bagging_fraction": 0.8,
+      "bagging_freq": 1,
+      "lambda_l2": 1.0,
+      "num_threads": 12,
+      "seed": 42,
+      "verbose": -1
+    },
+    "models": [
+      "ST12000NM0008",
+      "TOSHIBA MG07ACA14TA",
+      "TOSHIBA MG08ACA16TA"
+    ],
+    "train": [
+      "2025-02-01",
+      "2025-11-30"
+    ],
+    "val": [
+      "2026-01-01",
+      "2026-03-31"
+    ],
+    "neg_frac": 0.03,
+    "seed": 42
+  },
+  "results": {
+    "global_100trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.18051086278128758,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8601821981035479,
+      "recall_at_fpr": {
+        "0.01": 0.6079851055026892,
+        "0.001": 0.3207488622258999
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.5076923076923078,
+          "true_picks": 132,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.4215384615384616,
+          "true_picks": 274,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.37153846153846154,
+          "true_picks": 483,
+          "picks": 1300
+        }
+      }
+    },
+    "global_200trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.19135759202732,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.858539647218242,
+      "recall_at_fpr": {
+        "0.01": 0.606226727347952,
+        "0.001": 0.3189904840711626
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.573076923076923,
+          "true_picks": 149,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.43846153846153846,
+          "true_picks": 285,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.37692307692307686,
+          "true_picks": 490,
+          "picks": 1300
+        }
+      }
+    },
+    "global_300trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.18771181125238223,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8577327448024626,
+      "recall_at_fpr": {
+        "0.01": 0.6031237070748863,
+        "0.001": 0.32167976830781964
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.5576923076923077,
+          "true_picks": 145,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.43230769230769234,
+          "true_picks": 281,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.3753846153846153,
+          "true_picks": 488,
+          "picks": 1300
+        }
+      }
+    },
+    "global_model_col_100trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.17721047472370294,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8650623536803363,
+      "recall_at_fpr": {
+        "0.01": 0.6088125775755068,
+        "0.001": 0.31216383947041787
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.49230769230769234,
+          "true_picks": 128,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.4338461538461539,
+          "true_picks": 282,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.36230769230769233,
+          "true_picks": 471,
+          "picks": 1300
+        }
+      }
+    },
+    "global_model_col_200trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.18594522520455226,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8617792516354658,
+      "recall_at_fpr": {
+        "0.01": 0.6058129913115432,
+        "0.001": 0.3161977658254034
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.5346153846153846,
+          "true_picks": 139,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.44307692307692303,
+          "true_picks": 288,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.36538461538461536,
+          "true_picks": 475,
+          "picks": 1300
+        }
+      }
+    },
+    "global_model_col_300trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.18196941553024096,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8611632606089612,
+      "recall_at_fpr": {
+        "0.01": 0.6053992552751345,
+        "0.001": 0.3152668597434837
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.5038461538461538,
+          "true_picks": 131,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.43538461538461554,
+          "true_picks": 283,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.36615384615384616,
+          "true_picks": 476,
+          "picks": 1300
+        }
+      }
+    },
+    "per_model_100trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.1700005845738568,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.854335018994137,
+      "recall_at_fpr": {
+        "0.01": 0.5948489863467108,
+        "0.001": 0.30730244104261484
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.476923076923077,
+          "true_picks": 124,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.44307692307692303,
+          "true_picks": 288,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.3553846153846153,
+          "true_picks": 462,
+          "picks": 1300
+        }
+      }
+    },
+    "per_model_200trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.17612238846222766,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8471944634093126,
+      "recall_at_fpr": {
+        "0.01": 0.591745966073645,
+        "0.001": 0.30388911874224245
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.49615384615384617,
+          "true_picks": 129,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.43846153846153857,
+          "true_picks": 285,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.35923076923076924,
+          "true_picks": 467,
+          "picks": 1300
+        }
+      }
+    },
+    "per_model_300trees": {
+      "rows": 8556532,
+      "positives": 9668,
+      "pr_auc": 0.16948875451354786,
+      "pr_auc_random_baseline": 0.0011298970190259325,
+      "roc_auc": 0.8437605206598762,
+      "recall_at_fpr": {
+        "0.01": 0.5889532478278858,
+        "0.001": 0.298303682250724
+      },
+      "weekly": {
+        "base_rate_drive_weeks": 0.0014389301586533421,
+        "weeks": 13,
+        "top20": {
+          "mean_precision": 0.5000000000000001,
+          "true_picks": 130,
+          "picks": 260
+        },
+        "top50": {
+          "mean_precision": 0.416923076923077,
+          "true_picks": 271,
+          "picks": 650
+        },
+        "top100": {
+          "mean_precision": 0.34923076923076923,
+          "true_picks": 454,
+          "picks": 1300
+        }
+      }
+    }
+  },
+  "per_model_prauc": {
+    "global_100trees": {
+      "ST12000NM0008": 0.26257859682983137,
+      "TOSHIBA MG07ACA14TA": 0.18176540971344057,
+      "TOSHIBA MG08ACA16TA": 0.09632321784215073
+    },
+    "global_200trees": {
+      "ST12000NM0008": 0.2942726819168759,
+      "TOSHIBA MG07ACA14TA": 0.18057806509613483,
+      "TOSHIBA MG08ACA16TA": 0.09258737346796699
+    },
+    "global_300trees": {
+      "ST12000NM0008": 0.29977748753642536,
+      "TOSHIBA MG07ACA14TA": 0.17605964020816317,
+      "TOSHIBA MG08ACA16TA": 0.0877136598111629
+    },
+    "global_model_col_100trees": {
+      "ST12000NM0008": 0.2648977252227231,
+      "TOSHIBA MG07ACA14TA": 0.1833312141649853,
+      "TOSHIBA MG08ACA16TA": 0.08932984965290833
+    },
+    "global_model_col_200trees": {
+      "ST12000NM0008": 0.28895977518119775,
+      "TOSHIBA MG07ACA14TA": 0.183446127169573,
+      "TOSHIBA MG08ACA16TA": 0.09031632289154864
+    },
+    "global_model_col_300trees": {
+      "ST12000NM0008": 0.29418178507747755,
+      "TOSHIBA MG07ACA14TA": 0.1752866184474644,
+      "TOSHIBA MG08ACA16TA": 0.08597580938302676
+    },
+    "per_model_100trees": {
+      "ST12000NM0008": 0.2792277958716501,
+      "TOSHIBA MG07ACA14TA": 0.1767665398949651,
+      "TOSHIBA MG08ACA16TA": 0.08853077072239349
+    },
+    "per_model_200trees": {
+      "ST12000NM0008": 0.29068922004499964,
+      "TOSHIBA MG07ACA14TA": 0.17898220667426262,
+      "TOSHIBA MG08ACA16TA": 0.0855397125871359
+    },
+    "per_model_300trees": {
+      "ST12000NM0008": 0.28165157815912717,
+      "TOSHIBA MG07ACA14TA": 0.17646940999169228,
+      "TOSHIBA MG08ACA16TA": 0.0800706650559909
+    }
+  }
+}
