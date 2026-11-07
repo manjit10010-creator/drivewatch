@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "model": "drivewatch-risk",
+    "version": 1,
+    "table": "features_daily",
+    "start": "2026-01-01",
+    "end": "2026-03-31",
+    "rows": 8556532,
+    "positives": 9668,
+    "pr_auc": 0.19083583729338302
+  },
+  "thresholds": {
+    "high": 0.2907477617263794,
+    "medium": 0.04731203243136406,
+    "very_high_info": 0.8607443571090698
+  },
+  "stats": {
+    "high": {
+      "false_alarm_rate": 0.01,
+      "recall": 0.6074679354571784,
+      "share_flagged": 0.010675937400806775
+    },
+    "medium": {
+      "false_alarm_rate": 0.05,
+      "recall": 0.7142118328506413,
+      "share_flagged": 0.05075093507509818
+    },
+    "very_high_info": {
+      "false_alarm_rate": 0.001,
+      "recall": 0.3207488622258999,
+      "share_flagged": 0.0013612991805558607
+    }
+  }
+}
