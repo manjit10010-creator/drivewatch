@@ -155,3 +155,19 @@ The weekly precision at top K (0.54 at K = 20) is about twice the distinct-drive
 **Known limit.** A drive absent for more than 120 days before the scoring day could still differ from the training build on its first row back. This was not observed in April and is accepted.
 
 **Scope.** Dev sample (3 drive models) only. Widening to all models needs normalized model names (`--all-models`).
+
+## Phase 5b: precomputed scores and risk bands
+
+- The fleet is scored once per day by `score_fleet.py` and the result is stored in the gold table `fleet_scores` (date, serial_number, model, model_version, risk_score, risk_band, rank_in_day). The API serves this table; only `POST /predict` will score live. This keeps `/fleet/risk` and `/drive/{serial}` fast and the scores reproducible.
+- The model is loaded through the MLflow registry (`models:/drivewatch-risk@production`) and checked against `data/models/final_s1.txt` (max absolute difference 0).
+- Risk bands come from validation false-alarm levels, not fixed score cut-offs: `high` = score >= 0.2907 (1% false-alarm level, recall 0.607), `medium` = score >= 0.0473 (5% level, recall 0.714), `low` below. Raw scores are inflated by the 3% healthy-row sampling used in training, so fixed cut-offs would mean nothing. Ops should act on the ranked list; bands are a label.
+- Thresholds are stored in `reports/risk_bands.json`. `risk_bands.py` refuses end dates from 2026-05-01 on so the test month stays untouched.
+
+## Phase 5c: API skeleton
+
+- The API opens the gold DuckDB file read-only, once at startup (FastAPI lifespan), and uses one cursor per request. DuckDB allows one writer, so a Spark or DuckDB job writing to the file blocks the API, and the reverse.
+- All SQL is parameterised; path and query inputs are validated by Pydantic/FastAPI (top 1..1000, serial characters restricted), so bad input returns 422 before any query runs.
+- Every response carries an `X-Process-Time-ms` header and a warning is logged above 500 ms. Measured: 18.5 ms for `/fleet/risk?top=1000`.
+- DuckDB errors are mapped to HTTP 503. Unknown serial or a date with no scores returns 404; a model filter with no matches returns 200 with an empty list.
+- `/feedback` (step 5d) will write to a separate SQLite file `data/feedback.db`, never to the gold DuckDB, so the API can stay read-only on gold.
+- Top contributing features for `/predict` will use LightGBM `pred_contrib=True` instead of the `shap` library (lighter image, same per-feature contributions).
