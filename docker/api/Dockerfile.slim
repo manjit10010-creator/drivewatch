@@ -1,0 +1,19 @@
+# Slim DriveWatch API image: plain Python plus only what the API imports (no Spark, Java, scikit-learn, shap).
+# Build from the repo root:   docker build -t drivewatch-api:slim -f docker/api/Dockerfile.slim docker/api
+# Run:                        docker run --rm -p 8000:8000 -v "${PWD}:/workspace" drivewatch-api:slim
+# The repo is mounted at /workspace on purpose: the registered model's artifact path was recorded as /workspace/mlruns/...
+FROM python:3.11-slim
+
+# libgomp is the OpenMP library LightGBM needs
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    GIT_PYTHON_REFRESH=quiet
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+WORKDIR /workspace
+EXPOSE 8000
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
