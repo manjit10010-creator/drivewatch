@@ -1,14 +1,16 @@
-"""DriveWatch API (step 5c: health, fleet ranking, one drive's history).
+"""DriveWatch API (step 5d: health, fleet ranking, one drive's history, live scoring, alert feedback).
 
 Run from the repo root (inside the drivewatch-api image, see docker/api/Dockerfile):
     uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 Then open http://localhost:8000/docs for an interactive page that documents and tests every endpoint.
 
-The API only reads the table fleet_scores (written by src/models/score_fleet.py) and features_scoring.
-It does not load the model yet; /predict (step 5d) will.
+The fleet endpoints only read the table fleet_scores (written by src/models/score_fleet.py).
+POST /predict scores one drive live with the production model, which is loaded once at start-up
+(src/api/predict.py). POST /feedback stores ops answers in data/feedback.db (src/api/feedback.py).
 """
 import datetime as dt
 import logging
+import sqlite3
 import time
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -17,7 +19,7 @@ import duckdb
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request
 from fastapi.responses import JSONResponse
 
-from src.api import db
+from src.api import db, feedback, predict
 from src.api.schemas import DriveDay, DriveResponse, FleetDrive, FleetRiskResponse, HealthResponse
 
 log = logging.getLogger("drivewatch.api")
@@ -30,11 +32,25 @@ async def lifespan(app: FastAPI):
     # Open the warehouse once at startup (read-only), close it at shutdown.
     app.state.con = db.open_db()
     log.info("Opened %s read-only", db.DB_PATH)
+    feedback.init_db()
+    log.info("Feedback database ready at %s", feedback.DB_PATH)
+    # Load the production model once. If that fails the API still starts (the fleet pages keep working)
+    # and /predict answers 503 until the cause is fixed and the API restarted.
+    try:
+        t0 = time.perf_counter()
+        app.state.model = predict.load_model()
+        log.info("Loaded %s = version %s (%d features) in %.1f s", predict.MODEL_URI, app.state.model.version,
+                 len(app.state.model.features), time.perf_counter() - t0)
+    except Exception:
+        app.state.model = None
+        log.exception("Could not load the production model; /predict will answer 503")
     yield
     app.state.con.close()
 
 
-app = FastAPI(title="DriveWatch API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="DriveWatch API", version="0.2.0", lifespan=lifespan)
+app.include_router(predict.router)
+app.include_router(feedback.router)
 
 
 @app.middleware("http")
@@ -53,6 +69,12 @@ async def time_requests(request: Request, call_next):
 async def warehouse_error(request: Request, exc: duckdb.Error):
     log.error("warehouse error on %s: %s", request.url.path, exc)
     return JSONResponse(status_code=503, content={"detail": "The warehouse could not answer this request."})
+
+
+@app.exception_handler(sqlite3.Error)
+async def feedback_store_error(request: Request, exc: sqlite3.Error):
+    log.error("feedback store error on %s: %s", request.url.path, exc)
+    return JSONResponse(status_code=503, content={"detail": "The feedback store could not answer this request."})
 
 
 def get_cursor(request: Request):
@@ -87,14 +109,14 @@ def health(cur=Depends(get_cursor)):
 @app.get("/fleet/risk", response_model=FleetRiskResponse)
 def fleet_risk(
     top: int = Query(50, ge=1, le=1000, description="How many drives to return"),
-    model: Optional[str] = Query(None, max_length=64, description="Only this drive model, e.g. ST12000NM0008"),
+    model: Optional[str] = Query(None, max_length=64, description="Only this drive model, e.g.ST12000NM0008"),
     day: Optional[dt.date] = Query(None, alias="date", description="Scoring date, default is the latest day"),
     cur=Depends(get_cursor),
 ):
     """The riskiest drives on one day, riskiest first. `rank` is the rank across the whole fleet."""
     the_day = resolve_day(cur, day)
     rows = db.fleet_risk(cur, the_day, top, model)
-    drives = [FleetDrive(rank=r[0], serial_number=r[1], model=r[2], risk_score=round(r[3], 4), risk_band=r[4])
+    drives = [FleetDrive(rank=r[0], serial_number=r[1], model=r[2], risk_score=round(r[3], 4),risk_band=r[4])
               for r in rows]
     return FleetRiskResponse(date=the_day, model_filter=model, count=len(drives), drives=drives)
 
@@ -110,7 +132,7 @@ def drive(
         raise HTTPException(status_code=404, detail=f"Drive {serial} has no scores in the warehouse.")
     history = [
         DriveDay(date=r[0], risk_score=round(r[2], 4), risk_band=r[3], rank_in_day=r[4],
-                 smart_5_raw=r[5], smart_187_raw=r[6], smart_188_raw=r[7], smart_197_raw=r[8], temp_c=r[9])
+                 smart_5_raw=r[5], smart_187_raw=r[6], smart_188_raw=r[7], smart_197_raw=r[8],temp_c=r[9])
         for r in rows
     ]
     last = rows[-1]

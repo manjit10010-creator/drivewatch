@@ -171,3 +171,13 @@ The weekly precision at top K (0.54 at K = 20) is about twice the distinct-drive
 - DuckDB errors are mapped to HTTP 503. Unknown serial or a date with no scores returns 404; a model filter with no matches returns 200 with an empty list.
 - `/feedback` (step 5d) will write to a separate SQLite file `data/feedback.db`, never to the gold DuckDB, so the API can stay read-only on gold.
 - Top contributing features for `/predict` will use LightGBM `pred_contrib=True` instead of the `shap` library (lighter image, same per-feature contributions).
+
+## Phase 5d: live scoring and alert feedback
+
+- `POST /predict` takes the 25 model features of one drive-day (any of them may be left out, which reaches LightGBM as NaN, as in training) and returns the risk score, the risk band and the top 5 contributing features. It does not compute features: rolling windows and deltas need a drive's history and stay in the daily pipeline (`build_scoring_features.py`).
+- The production model is loaded ONCE at API start-up from the registry (`models:/drivewatch-risk@production`), never per request. If loading fails the API still starts (fleet pages keep working) and `/predict` answers 503.
+- `predict.py` has its own short copy of the load and band logic instead of importing `score_fleet.py`, because that script imports training code. `src/api/check_predict.py` proves the two agree: for `ZHZ42XAP` on 2026-06-30 the live score equals the stored `fleet_scores` score exactly (difference 0), same band, and sigmoid(sum of contributions) equals the score.
+- Contributions come from LightGBM `pred_contrib=True` (log-odds, positive pushes the risk up), not the `shap` library. The request model rejects unknown field names (`extra="forbid"`) and NaN/inf values, so a typo is a 422 instead of a silently ignored feature.
+- `POST /feedback` stores an ops answer (true_positive or false_positive, optional note) in `data/feedback.db` (SQLite, git-ignored), never in the gold DuckDB. It is append-only: a second answer for the same alert is a new row and the newest wins at retraining. The alert must exist (drive scored on that date in `fleet_scores`), otherwise 404. The row records the model version and band of the alert. `GET /feedback` lists the newest answers for the Phase 6 triage screen.
+- Every prediction writes one JSON line to the `drivewatch.predictions` logger (time, serial, model version, score, band, ms). It currently goes to the console only; shipping it to a file or the monitoring tables is a Phase 6 task.
+- Measured: `/predict` 2.1 ms. The first `POST /feedback` after a long idle took 1.2 s (cause not yet established; re-measured separately).
