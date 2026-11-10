@@ -20,7 +20,7 @@ from typing import Optional
 
 import numpy as np
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from src.api.schemas import RiskBand
 
@@ -32,6 +32,12 @@ MODEL_NAME = "drivewatch-risk"
 MODEL_URI = f"models:/{MODEL_NAME}@production"
 BANDS_PATH = "reports/risk_bands.json"
 TOP_N = 5  # how many contributing features to return
+# A request needs at least this many of the 25 features filled in. In June 2026 every real drive-day of the
+# 3 development models had 24 or 25 filled (check_nonnull.py), so 20 leaves room for drive models that do not
+# report some SMART attributes while still rejecting an empty or nearly empty body, which LightGBM would
+# otherwise score as a confident 'high' (all-missing values follow the learned missing-value branches).
+# Re-check this number when the model is widened to all drive models.
+MIN_FILLED = 20
 
 # The 25 features of the production model (reports/selected_features_25.txt). load_model() checks that the
 # registry model expects exactly these names, so a mismatch stops /predict instead of scoring garbage.
@@ -86,6 +92,14 @@ class PredictRequest(BaseModel):
     temp_std_14: Optional[float] = _feature()
     temp_std_30: Optional[float] = _feature()
     miss_smart_187: Optional[float] = _feature()
+
+    @model_validator(mode="after")
+    def enough_features(self):
+        filled = sum(getattr(self, name) is not None for name in FEATURES)
+        if filled < MIN_FILLED:
+            raise ValueError(f"Only {filled} of the {len(FEATURES)} features are filled in; "
+                             f"at least {MIN_FILLED} are needed to score a drive.")
+        return self
 
 
 class Contribution(BaseModel):
