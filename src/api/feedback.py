@@ -89,7 +89,11 @@ router = APIRouter()
 @router.post("/feedback", response_model=FeedbackRecord, status_code=201)
 def post_feedback(body: FeedbackRequest, request: Request):
     """Mark an alert as a true or false positive. The alert must exist: that drive scored on that date."""
-    cur = request.app.state.con.cursor()
+    con = request.app.state.con
+    if con is None:
+        raise HTTPException(status_code=503, detail="The warehouse could not be opened when the API started, "
+                                                    "so the alert cannot be checked. See the README.")
+    cur = con.cursor()
     try:
         row = cur.execute("SELECT model_version, risk_band FROM fleet_scores WHERE serial_number = ? AND date = ?",
                           [body.serial_number, body.alert_date]).fetchone()
